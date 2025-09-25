@@ -7,6 +7,7 @@ int main(int argc, char* argv[]) {
 	int count = stoi(argv[2]);
 	ofstream out;
 	out.open(filename, ios::binary);
+	cout << "Enter " << count << " employees" << endl;
 	for (int i = 0; i < count; i++) {
 		employee e;
 		cin >> e.num >> e.name >> e.hours;

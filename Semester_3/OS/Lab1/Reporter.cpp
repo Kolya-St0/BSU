@@ -10,7 +10,6 @@ int main(int argc, char* argv[]) {
 	in.open(inputname, ios::binary);
 	ofstream out;
 	out.open(outputname);
-	out << inputname << " file report" << endl;
 	employee e;
 	while (in.read(reinterpret_cast<char*>(&e), sizeof(employee))) {
 		out << e.num << " " << e.name << " " << e.hours << " " << e.hours * salary << endl;

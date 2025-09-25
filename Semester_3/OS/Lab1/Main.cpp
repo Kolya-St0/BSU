@@ -1,75 +1,67 @@
-﻿// OS_1.cpp: определяет точку входа для приложения.
-//
-
-#include "employee.h"
+﻿#include "employee.h"
 
 using namespace std;
 
-void print_creator(string filename)
+void print_file_bin(string filename)
 {
-	cout << endl;
+	cout << endl << filename << endl;
 	ifstream in;
 	in.open(filename, ios::binary);
 	employee e;
 	while (in.read(reinterpret_cast<char*>(&e), sizeof(employee))) {
 		cout << e.num << " " << e.name << " " << e.hours << endl;
 	}
+	cout << endl;
 	in.close();
 }
 
-void print_txt(string filename)
+void print_file_txt(string filename)
 {
-	cout << endl;
+	cout << endl << filename << endl;
 	ifstream in;
 	in.open(filename);
 	string temp;
 	while (getline(in, temp)) {
 		cout << temp << endl;
 	}
+	cout << endl;
 	in.close();
+}
+
+void run_and_wait(string process)
+{
+	char process_name[100];
+	strcpy(process_name, process.c_str());
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+	if (!CreateProcess(NULL, process_name, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+		cout << "Process creation failed with error code " << GetLastError() << endl;
+		return;
+	}
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
 
 int main() {
 	string bin_filename;
 	int count;
+	cout << "Input bin file name and records count: ";
 	cin >> bin_filename >> count;
-	string process_temp = "Creator.exe " + bin_filename + " " + to_string(count);
-	char process[50];
-	strcpy(process, process_temp.c_str());
+	string creator = "Creator.exe " + bin_filename + " " + to_string(count);
+	run_and_wait(creator);
+	print_file_bin(bin_filename);
 
-	STARTUPINFO siCreator;
-	PROCESS_INFORMATION piCreator;
-	ZeroMemory(&siCreator, sizeof(siCreator));
-	siCreator.cb = sizeof(siCreator);
-	ZeroMemory(&piCreator, sizeof(piCreator));
-	if (!CreateProcess(NULL, process, NULL, NULL, FALSE, 0, NULL, NULL, &siCreator, &piCreator)) {
-		cout << ":(";
-		return 1;
-	}
-	WaitForSingleObject(piCreator.hProcess, INFINITE);
-	CloseHandle(piCreator.hProcess);
-	CloseHandle(piCreator.hThread);
-	print_creator(bin_filename);
-
-	double salary;
 	string txt_filename;
+	double salary;
+	cout << "Input txt file name and pay per hour: ";
 	cin >> txt_filename >> salary;
-	process_temp = "Reporter.exe " + bin_filename + " " + txt_filename + " " + to_string(salary);
-	strcpy(process, process_temp.c_str());
+	string reporter = "Reporter.exe " + bin_filename + " " + txt_filename + " " + to_string(salary);
+	run_and_wait(reporter);
+	print_file_txt(txt_filename);
 
-	STARTUPINFO siReporter;
-	PROCESS_INFORMATION piReporter;
-	ZeroMemory(&siReporter, sizeof(siReporter));
-	siReporter.cb = sizeof(siReporter);
-	ZeroMemory(&piReporter, sizeof(piReporter));
-	if (!CreateProcess(NULL, process, NULL, NULL, FALSE, 0, NULL, NULL, &siReporter, &piReporter)) {
-		cout << ":(";
-		return 1;
-	}
-	WaitForSingleObject(piReporter.hProcess, INFINITE);
-	CloseHandle(piReporter.hProcess);
-	CloseHandle(piReporter.hThread);
-
-	print_txt(txt_filename);
 	return 0;
 }
