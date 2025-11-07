@@ -1,10 +1,9 @@
-﻿#include "iostream"
+﻿#include <iostream>
 #include "Windows.h"
-#include <mutex>
 
 using namespace std;
 
-mutex cout_mutex;
+HANDLE hmutex = CreateMutex(NULL, FALSE, NULL);
 
 struct Array 
 {
@@ -29,9 +28,10 @@ DWORD WINAPI min_max(LPVOID _a)
 		}
 		Sleep(7);
 	}
-	lock_guard<mutex> lock(cout_mutex);
+	WaitForSingleObject(hmutex, INFINITE);
 	cout << "min = " << a->min << endl;
 	cout << "max = " << a->max << endl;
+	ReleaseMutex(hmutex);
 	return 0;
 }
 
@@ -45,13 +45,19 @@ DWORD WINAPI average(LPVOID _a)
 		Sleep(12);
 	}
 	a->average = static_cast<double>(sum) / a->size;
-	lock_guard<mutex> lock(cout_mutex);
+	WaitForSingleObject(hmutex, INFINITE);
 	cout << "average = " << a->average << endl;
+	ReleaseMutex(hmutex);
 	return 0;
 }
 
 int main()
 {
+	if (hmutex == 0) {
+		cout << "Mutex creation failed with error code - " << GetLastError();
+		return 0;
+	}
+
 	int n;
 	cout << "Enter array size: ";
 	cin >> n;
@@ -78,9 +84,9 @@ int main()
 	}
 
 	WaitForSingleObject(hmin_max, INFINITE);
-	CloseHandle(hmin_max);
-
 	WaitForSingleObject(haverage, INFINITE);
+	
+	CloseHandle(hmin_max);
 	CloseHandle(haverage);
 
 	cout << "Final array: ";
