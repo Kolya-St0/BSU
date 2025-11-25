@@ -108,8 +108,6 @@ void MarkerManager::marker_work(int id)
 	}
 }
 
-
-
 void MarkerManager::start_threads()
 {
 	for (int i = 0; i < th_count; i++) {
